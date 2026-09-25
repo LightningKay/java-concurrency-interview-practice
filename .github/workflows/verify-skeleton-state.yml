@@ -1,0 +1,32 @@
+name: Verify Skeleton State
+
+# Main branch must contain only skeleton implementations.
+# Every test should fail; if any test passes, code was implemented and CI must fail.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  all-tests-must-fail:
+    name: All tests must fail (unimplemented)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Run all tests
+        run: mvn test -fae --batch-mode
+        continue-on-error: true
+
+      - name: Verify no tests passed
+        run: python3 .github/scripts/verify-all-tests-failed.py .

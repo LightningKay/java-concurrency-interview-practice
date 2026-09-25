@@ -21,7 +21,7 @@ public class ParallelMergeSortAdvanced<T> {
         throw new UnsupportedOperationException("Implement sort()");
     }
     public static int adaptiveThreshold(int n) {
-        return Math.max(1024, n/(4*Runtime.getRuntime().availableProcessors()));
+        throw new UnsupportedOperationException("Implement adaptiveThreshold()");
     }
     static class SortTask<T> extends RecursiveAction {
         private final T[] array,temp; private final int lo,hi; private final Comparator<T> cmp; private final int threshold;
@@ -32,6 +32,6 @@ public class ParallelMergeSortAdvanced<T> {
         throw new UnsupportedOperationException("Implement sequentialMerge()");
     }
     static <T> int binarySearch(T[] src,int from,int to,T key,Comparator<T> cmp) {
-        int lo=from,hi=to; while(lo<hi){int m=lo+(hi-lo)/2; if(cmp.compare(src[m],key)<0) lo=m+1; else hi=m;} return lo;
+        throw new UnsupportedOperationException("Implement binarySearch()");
     }
 }

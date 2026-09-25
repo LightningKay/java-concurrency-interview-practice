@@ -27,6 +27,9 @@ class LockFreeRingBufferTest {
     }
     @Test void mustBePowerOfTwo() {
         assertThrows(IllegalArgumentException.class, ()->new LockFreeRingBuffer<>(3));
+        var buffer = new LockFreeRingBuffer<Integer>(4);
+        assertTrue(buffer.offer(1), "offer() must succeed on a valid power-of-two buffer");
+        assertEquals(1, buffer.poll(), "poll() must return the offered item");
     }
     @Test void spscConcurrent() throws Exception {
         var buf=new LockFreeRingBuffer<Integer>(1024);

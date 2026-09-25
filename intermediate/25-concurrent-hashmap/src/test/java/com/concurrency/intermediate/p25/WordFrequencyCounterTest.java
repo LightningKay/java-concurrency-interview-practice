@@ -71,6 +71,10 @@ class WordFrequencyCounterTest {
 
     @Test
     void missingWordReturnsZero() {
-        assertEquals(0, counter.getCount("nothere"));
+        counter.addDocument("hello world");
+        assertEquals(0, counter.getCount("nothere"),
+                "A word never added must return 0");
+        assertEquals(1, counter.getCount("hello"),
+                "addDocument() must count words before getCount() is meaningful");
     }
 }

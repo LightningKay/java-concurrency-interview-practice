@@ -31,36 +31,60 @@ class OptimisticPointTest {
     @Test
     void getXAndGetYAreThreadSafe() throws InterruptedException {
         OptimisticPoint p = new OptimisticPoint(1, 1);
+        java.util.concurrent.atomic.AtomicReference<Throwable> failure = new java.util.concurrent.atomic.AtomicReference<>();
         List<Thread> threads = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             threads.add(new Thread(() -> {
-                for (int j = 0; j < 100; j++) {
-                    p.getX(); p.getY();
+                try {
+                    for (int j = 0; j < 100; j++) {
+                        p.getX();
+                        p.getY();
+                    }
+                } catch (Throwable t) {
+                    failure.compareAndSet(null, t);
                 }
             }));
         }
         threads.forEach(Thread::start);
         for (Thread t : threads) t.join();
-        // No assertion — just verifying no exception / deadlock
+        assertNull(failure.get(), "Concurrent getX/getY must not throw");
+        assertEquals(1.0, p.getX(), 1e-9);
+        assertEquals(1.0, p.getY(), 1e-9);
     }
 
     @Test
     void concurrentMovesAndDistancesAreConsistent() throws InterruptedException {
         OptimisticPoint p = new OptimisticPoint(3, 4);
+        java.util.concurrent.atomic.AtomicReference<Throwable> failure = new java.util.concurrent.atomic.AtomicReference<>();
+        java.util.concurrent.CountDownLatch moved = new java.util.concurrent.CountDownLatch(1);
         List<Thread> threads = new ArrayList<>();
+
+        threads.add(new Thread(() -> {
+            try {
+                for (int j = 0; j < 50; j++) p.move(j, j);
+                moved.countDown();
+            } catch (Throwable t) {
+                failure.compareAndSet(null, t);
+            }
+        }));
         for (int i = 0; i < 5; i++) {
             threads.add(new Thread(() -> {
-                for (int j = 0; j < 50; j++) p.move(j, j);
-            }));
-            threads.add(new Thread(() -> {
-                for (int j = 0; j < 50; j++) {
-                    double d = p.distanceFromOrigin();
-                    assertTrue(d >= 0, "Distance must be non-negative, got: " + d);
+                try {
+                    while (moved.getCount() > 0) {
+                        double d = p.distanceFromOrigin();
+                        assertTrue(d >= 0, "Distance must be non-negative, got: " + d);
+                        Thread.yield();
+                    }
+                } catch (Throwable t) {
+                    failure.compareAndSet(null, t);
                 }
             }));
         }
         threads.forEach(Thread::start);
         for (Thread t : threads) t.join();
+        assertNull(failure.get(), "Concurrent move/distanceFromOrigin must not throw");
+        assertEquals(49.0, p.getX(), 1e-9, "Final x must reflect the last move(49, 49)");
+        assertEquals(49.0, p.getY(), 1e-9, "Final y must reflect the last move(49, 49)");
     }
 
     @Test

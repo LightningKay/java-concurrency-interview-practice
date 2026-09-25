@@ -18,7 +18,8 @@ class STMTest {
     @Test
     void readDirectReturnsInitialValue() {
         TVar<Integer> v = new TVar<>(42);
-        assertEquals(42, v.readDirect());
+        assertEquals(42, STM.atomically(v::read),
+                "Transactional read must return the initial value");
     }
 
     @Test
@@ -143,19 +144,25 @@ class STMTest {
 
         int threads = 10, txnsEach = 50;
         List<Thread> workers = new ArrayList<>();
+        java.util.concurrent.atomic.AtomicReference<Throwable> failure = new java.util.concurrent.atomic.AtomicReference<>();
 
         for (int t = 0; t < threads; t++) {
             workers.add(new Thread(() -> {
-                for (int i = 0; i < txnsEach; i++) {
-                    try { STM.transfer(a, b, 10); } catch (Exception ignored) {}
-                    try { STM.transfer(b, c, 10); } catch (Exception ignored) {}
-                    try { STM.transfer(c, a, 10); } catch (Exception ignored) {}
+                try {
+                    for (int i = 0; i < txnsEach; i++) {
+                        STM.transfer(a, b, 10);
+                        STM.transfer(b, c, 10);
+                        STM.transfer(c, a, 10);
+                    }
+                } catch (Throwable ex) {
+                    failure.compareAndSet(null, ex);
                 }
             }));
         }
         workers.forEach(Thread::start);
         for (Thread w : workers) w.join();
 
+        assertNull(failure.get(), "Concurrent transfers must complete without throwing");
         int total = a.readDirect() + b.readDirect() + c.readDirect();
         assertEquals(3 * initial, total,
                 "Total balance must be conserved across all concurrent transfers; got: " + total);

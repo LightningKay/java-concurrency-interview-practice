@@ -92,6 +92,7 @@ class ConnectionPoolTest {
         AtomicInteger concurrentUsers = new AtomicInteger(0);
         AtomicInteger maxObserved = new AtomicInteger(0);
         CountDownLatch done = new CountDownLatch(threads);
+        java.util.concurrent.atomic.AtomicReference<Throwable> failure = new java.util.concurrent.atomic.AtomicReference<>();
 
         for (int i = 0; i < threads; i++) {
             new Thread(() -> {
@@ -102,11 +103,17 @@ class ConnectionPoolTest {
                     Thread.sleep(20);
                     concurrentUsers.decrementAndGet();
                     pool.release(id);
-                } catch (InterruptedException ignored) {}
-                finally { done.countDown(); }
+                } catch (Throwable t) {
+                    failure.compareAndSet(null, t);
+                } finally {
+                    done.countDown();
+                }
             }).start();
         }
         done.await();
+        assertNull(failure.get(), "acquire/release must complete without throwing");
+        assertTrue(maxObserved.get() > 0,
+                "acquire() must grant connections before capacity can be measured");
         assertTrue(maxObserved.get() <= capacity,
                 "Concurrent users (" + maxObserved.get() + ") must never exceed pool capacity (" + capacity + ")");
     }

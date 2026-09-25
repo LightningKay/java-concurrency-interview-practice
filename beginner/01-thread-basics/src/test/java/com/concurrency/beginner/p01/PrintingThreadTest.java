@@ -63,6 +63,8 @@ class PrintingThreadTest {
             t.start();
             t.join();
             assertEquals("", out.toString().trim(), "Nothing should be printed for repeatCount=0");
+            assertNotNull(t.executingThreadName,
+                    "run() must execute and record the thread name even when repeatCount=0");
         } finally {
             System.setOut(originalOut);
         }
@@ -74,16 +76,14 @@ class PrintingThreadTest {
         PrintingThread t1 = new PrintingThread("t1", "A", 100);
         PrintingThread t2 = new PrintingThread("t2", "B", 100);
 
-        long start = System.currentTimeMillis();
         t1.start();
         t2.start();
         t1.join();
         t2.join();
-        long elapsed = System.currentTimeMillis() - start;
 
-        // Both threads running concurrently should finish faster than sequentially
-        // This is a loose check — just ensure both completed
         assertTrue(t1.getState() == Thread.State.TERMINATED);
         assertTrue(t2.getState() == Thread.State.TERMINATED);
+        assertNotNull(t1.executingThreadName, "t1 must run() successfully and record its thread name");
+        assertNotNull(t2.executingThreadName, "t2 must run() successfully and record its thread name");
     }
 }

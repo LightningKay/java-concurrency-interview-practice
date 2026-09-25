@@ -59,6 +59,7 @@
         <module>expert/48-thread-confinement-pool</module>
         <module>expert/49-parallel-merge-sort-advanced</module>
         <module>expert/50-mini-job-scheduler</module>
+        <module>virtual-threads</module>
     </modules>
 
     <properties>

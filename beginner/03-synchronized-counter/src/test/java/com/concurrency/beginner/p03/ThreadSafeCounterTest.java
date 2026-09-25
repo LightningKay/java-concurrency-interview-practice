@@ -87,7 +87,12 @@ class ThreadSafeCounterTest {
 
     @Test
     void unsafeCounterDemonstratesRaceCondition() throws InterruptedException {
-        // Run many times to expose the race — at least one run should show data loss
+        // increment() must actually work before we can demonstrate a race
+        UnsafeCounter sanity = new UnsafeCounter();
+        sanity.increment();
+        assertEquals(1, sanity.getCount(),
+                "UnsafeCounter.increment() must work for the race-condition demo");
+
         boolean raceDetected = false;
         for (int attempt = 0; attempt < 5 && !raceDetected; attempt++) {
             UnsafeCounter unsafe = new UnsafeCounter();

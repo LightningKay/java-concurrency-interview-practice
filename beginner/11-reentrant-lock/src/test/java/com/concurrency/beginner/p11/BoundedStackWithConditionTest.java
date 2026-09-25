@@ -74,18 +74,40 @@ class BoundedStackWithConditionTest {
         BoundedStackWithCondition<Integer> stack = new BoundedStackWithCondition<>(5);
         int ops = 50;
         CountDownLatch done = new CountDownLatch(2);
+        java.util.concurrent.atomic.AtomicInteger pushed = new java.util.concurrent.atomic.AtomicInteger();
+        java.util.concurrent.atomic.AtomicInteger popped = new java.util.concurrent.atomic.AtomicInteger();
+        java.util.concurrent.atomic.AtomicReference<Throwable> failure = new java.util.concurrent.atomic.AtomicReference<>();
+
         Thread producer = new Thread(() -> {
-            try { for (int i = 0; i < ops; i++) stack.push(i); }
-            catch (InterruptedException ignored) {}
-            finally { done.countDown(); }
+            try {
+                for (int i = 0; i < ops; i++) {
+                    stack.push(i);
+                    pushed.incrementAndGet();
+                }
+            } catch (Throwable t) {
+                failure.compareAndSet(null, t);
+            } finally {
+                done.countDown();
+            }
         });
         Thread consumer = new Thread(() -> {
-            try { for (int i = 0; i < ops; i++) stack.pop(); }
-            catch (InterruptedException ignored) {}
-            finally { done.countDown(); }
+            try {
+                for (int i = 0; i < ops; i++) {
+                    stack.pop();
+                    popped.incrementAndGet();
+                }
+            } catch (Throwable t) {
+                failure.compareAndSet(null, t);
+            } finally {
+                done.countDown();
+            }
         });
-        producer.start(); consumer.start();
+        producer.start();
+        consumer.start();
         assertTrue(done.await(8, TimeUnit.SECONDS), "Producer and consumer should complete without deadlock");
+        assertNull(failure.get(), "push/pop must complete without throwing");
+        assertEquals(ops, pushed.get(), "All push operations must succeed");
+        assertEquals(ops, popped.get(), "All pop operations must succeed");
         assertEquals(0, stack.size());
     }
 }

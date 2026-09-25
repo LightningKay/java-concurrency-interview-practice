@@ -42,6 +42,10 @@ class LockFreeMetricsTest {
         assertEquals(Integer.MAX_VALUE, metrics.getMinLatency());
         assertEquals(Integer.MIN_VALUE, metrics.getMaxLatency());
         assertEquals(0, metrics.getTotalCount());
+        metrics.recordLatency(42);
+        assertEquals(1, metrics.getTotalCount(), "recordLatency() must increment count");
+        assertEquals(42, metrics.getMinLatency());
+        assertEquals(42, metrics.getMaxLatency());
     }
 
     @Test
