@@ -1,5 +1,6 @@
 package com.concurrency.beginner.p02;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,7 +19,9 @@ public class TaskRunner {
      */
     public void runTask(Runnable task, String threadName) throws InterruptedException {
         // TODO: create a thread with the given name, start it, then join it
-        throw new UnsupportedOperationException("Implement this method");
+        Thread newThread = new Thread(task, threadName);
+        newThread.start();
+        newThread.join();
     }
 
     /**
@@ -29,7 +32,19 @@ public class TaskRunner {
      */
     public void runTasksParallel(List<Runnable> tasks) throws InterruptedException {
         // TODO: start all threads, then join all threads
-        throw new UnsupportedOperationException("Implement this method");
+        List<Thread> threads = new ArrayList<>();
+        for(int i = 0; i < tasks.size(); i++){
+            Thread newThread = new Thread(tasks.get(i), "worker-"+ i);
+            threads.add(newThread);
+        }
+
+        for(int i = 0; i < threads.size(); i++){
+            threads.get(i).start();
+        }
+
+        for(int i = 0; i < threads.size(); i++){
+            threads.get(i).join();
+        }
     }
 
     /**
@@ -42,6 +57,12 @@ public class TaskRunner {
      */
     public Runnable buildCountingRunnable(List<Integer> collector, int value, int times) {
         // TODO: return a lambda or anonymous class
-        throw new UnsupportedOperationException("Implement this method");
+        System.out.println(collector.toString());
+        Runnable runnable = () -> {
+            for(int j = 0 ; j < times; j++) {
+               collector.add(value);
+            }
+        };
+        return runnable;
     }
 }
