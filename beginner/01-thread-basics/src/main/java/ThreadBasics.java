@@ -8,8 +8,9 @@ public class ThreadBasics {
      * Creates a Thread from the given Runnable, starts it, and returns it.
      */
     public Thread createAndStartThread(Runnable task) {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
+        Thread newThread = new Thread(task);
+        newThread.start();
+        return newThread;
     }
 
     /**
@@ -17,23 +18,23 @@ public class ThreadBasics {
      * The thread should print "Hello from <name>" when run.
      */
     public Thread extendThread(String name) {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
+        Thread newThread = new Thread(() -> {
+            System.out.println("Hello from " + Thread.currentThread().getName() + " when run.");
+        }, name);
+        return newThread;
     }
 
     /**
      * Returns thread info as "name=<name>,state=<state>,daemon=<isDaemon>"
      */
     public String getThreadInfo(Thread t) {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
+        return "name="+ t.getName() + ",state="+ t.getState() + ",daemon=" + t.isDaemon();
     }
 
     /**
      * Returns the number of active threads in the current thread group.
      */
     public int countActiveThreads() {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not implemented yet");
+        return Thread.currentThread().getThreadGroup().activeCount();
     }
 }
