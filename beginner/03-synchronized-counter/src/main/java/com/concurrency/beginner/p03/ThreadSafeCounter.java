@@ -11,35 +11,35 @@ public class ThreadSafeCounter {
     private int count = 0;
 
     /** Increments the counter by 1. */
-    public void increment() {
+    public synchronized void increment() {
         // TODO: synchronize and increment
-        throw new UnsupportedOperationException("Implement this method");
+        count += 1;
     }
 
     /** Decrements the counter by 1. */
-    public void decrement() {
+    public synchronized void decrement() {
         // TODO: synchronize and decrement
-        throw new UnsupportedOperationException("Implement this method");
+        count -= 1;
     }
 
     /** Returns the current count. Must reflect all completed increments/decrements. */
-    public int getCount() {
+    public synchronized int getCount() {
         // TODO: synchronize and return count
-        throw new UnsupportedOperationException("Implement this method");
+        return count;
     }
 
     /** Resets the counter to 0. */
-    public void reset() {
+    public synchronized void reset() {
         // TODO: synchronize and reset
-        throw new UnsupportedOperationException("Implement this method");
+        count = 0;
     }
 
     /**
      * Increments the counter by `delta` as a single atomic operation.
      * @param delta the amount to add (can be negative)
      */
-    public void incrementBy(int delta) {
+    public synchronized void incrementBy(int delta) {
         // TODO: synchronize and add delta
-        throw new UnsupportedOperationException("Implement this method");
+        count += delta;
     }
 }
